@@ -16,6 +16,7 @@ private:
     int id;
     Priority priority;
     std::string payload;
+    size_t size;
 
 public:
     Packet(int p_id, Priority p_priority, std::string p_payload)
@@ -29,6 +30,7 @@ public:
 
     int getId() const { return id; }
     Priority getPriority() const { return priority; }
+    size_t getSize() const { return size; }
 
     std::string getPriorityString() const {
         switch (priority) {
