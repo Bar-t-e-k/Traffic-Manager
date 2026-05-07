@@ -10,13 +10,20 @@ class TrafficManager {
 private:
     std::vector<std::unique_ptr<Packet>> queue;
 
+    int totalReceived = 0;
+    int totalDropped = 0;
+    int totalProcessed = 0;
+
 public:
     void addPacket(std::unique_ptr<Packet> packet) {
         queue.push_back(std::move(packet));
+        totalReceived++;
     }
 
     void dropOversizedPackets(size_t maxAllowedSize) {
         std::cout << "\n[POLICING] Dropping packets larger than " << maxAllowedSize << " bytes.\n";
+
+        size_t initialSize = queue.size();
 
         queue.erase(
             std::remove_if(queue.begin(), queue.end(),
@@ -25,6 +32,10 @@ public:
                 }),
             queue.end()
         );
+
+        int dropped = initialSize - queue.size();
+        totalDropped += dropped;
+        std::cout << "\n[POLICING] Dropped " << dropped << " oversized packets.\n";
     }
 
     void sortPackets() {
@@ -42,12 +53,24 @@ public:
             std::cout << "[SENDING] ID: " << packet->getId()
                 << " | Priority: " << packet->getPriorityString() << "\n";
         }
+
+		totalProcessed += queue.size();
     }
 
     void processTrafficWithClear() {
 		processTraffic();
 
         queue.clear();
+    }
+
+    void printStatistics() const {
+        std::cout << "\n=====================================\n";
+        std::cout << "      TRAFFIC MANAGER STATISTICS     \n";
+        std::cout << "=====================================\n";
+        std::cout << " Total Packets Received : " << totalReceived << "\n";
+        std::cout << " Packets Dropped (MTU)  : " << totalDropped << "\n";
+        std::cout << " Packets Processed      : " << totalProcessed << "\n";
+        std::cout << "=====================================\n";
     }
 };
 

@@ -20,13 +20,9 @@ private:
 
 public:
     Packet(int p_id, Priority p_priority, std::string p_payload, size_t p_size)
-        : id(p_id), priority(p_priority), payload(std::move(p_payload)), size(p_size) {
-        std::cout << "[CREATED] Packet ID: " << id << " created.\n";
-    }
+        : id(p_id), priority(p_priority), payload(std::move(p_payload)), size(p_size) {}
 
-    ~Packet() {
-        std::cout << "[DESTROYED] Packet ID: " << id << " is being deleted from memory.\n";
-    }
+    ~Packet() {}
 
     int getId() const { return id; }
     Priority getPriority() const { return priority; }
