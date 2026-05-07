@@ -44,6 +44,21 @@ build/
 Build/
 build-*/
 
+# Visual Studio
+.vs/
+[Bb]in/
+[Oo]bj/
+Traffic-Manager/Debug/
+Traffic-Manager/Release/
+Traffic-Manager/x64/
+*.user
+*.suo
+*.sln.docstates
+*.vcxproj
+*.filters
+*.slnx
+*.sln
+
 # CMake generated files
 CMakeFiles/
 CMakeCache.txt
