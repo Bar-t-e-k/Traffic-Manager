@@ -15,6 +15,18 @@ public:
         queue.push_back(std::move(packet));
     }
 
+    void dropOversizedPackets(size_t maxAllowedSize) {
+        std::cout << "\n[POLICING] Dropping packets larger than " << maxAllowedSize << " bytes.\n";
+
+        queue.erase(
+            std::remove_if(queue.begin(), queue.end(),
+                [maxAllowedSize](const std::unique_ptr<Packet>& packet) {
+                    return packet->getSize() > maxAllowedSize;
+                }),
+            queue.end()
+        );
+    }
+
     void sortPackets() {
         std::cout << "\n[SCHEDULER] Sorting packets by priority...\n";
 
