@@ -3,25 +3,35 @@
 #include <iostream>
 
 int main() {
+    std::ofstream clearFile("simulator_logs.txt", std::ios::trunc);
+    clearFile.close();
+
     TrafficManager manager;
 
-    std::cout << "TRAFFIC SIMULATOR START:\n\n";
+    Logger::log("TRAFFIC SIMULATOR START:\n");
 
     int packetsToGenerate = 100;
-    std::cout << "[SYSTEM] Generating " << packetsToGenerate << " random packets...\n";
+    Logger::log("[SYSTEM] Generating " + std::to_string(packetsToGenerate) + " random packets...");
 
-    auto incomingTraffic = TrafficGenerator::generateTraffic(packetsToGenerate);
+    try {
+        auto incomingTraffic = TrafficGenerator::generateTraffic(packetsToGenerate);
 
-    for (auto& packet : incomingTraffic) {
-        manager.addPacket(std::move(packet));
-    }
-
+        for (auto& packet : incomingTraffic) {
+            manager.addPacket(std::move(packet));
+        }
+    } catch (const InvalidPacketException& ex) {
+        Logger::log("[ERROR] " + std::string(ex.what()));
+	} catch (const std::exception& ex) {
+        Logger::log("[ERROR] Unexpected exception: " + std::string(ex.what()));
+        return -1;
+	}
+    
     manager.dropOversizedPackets(1500);
     manager.sortPackets();
     manager.processTrafficWithClear();
     manager.printStatistics();
 
-    std::cout << "\nSIMULATION FINISHED\n";
+    Logger::log("\nSIMULATION FINISHED\n");
 
     return 0;
 }

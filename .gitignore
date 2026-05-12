@@ -82,3 +82,6 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# logs
+/Traffic-Manager/simulator_logs.txt
