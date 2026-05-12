@@ -4,6 +4,11 @@
 #include <string>
 #include <iostream>
 
+class InvalidPacketException : public std::runtime_error {
+public:
+    InvalidPacketException(const std::string& msg) : std::runtime_error(msg) {}
+};
+
 enum class Priority {
     LOW = 0,
     MEDIUM,
@@ -20,7 +25,12 @@ private:
 
 public:
     Packet(int p_id, Priority p_priority, std::string p_payload, size_t p_size)
-        : id(p_id), priority(p_priority), payload(std::move(p_payload)), size(p_size) {}
+        : id(p_id), priority(p_priority), payload(std::move(p_payload)), size(p_size) {
+
+        if (p_size == 0) {
+            throw InvalidPacketException("Packet size cannot be 0 bytes! ID: " + std::to_string(p_id));
+        }
+    }
 
     ~Packet() {}
 

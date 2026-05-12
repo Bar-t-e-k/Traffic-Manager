@@ -2,6 +2,7 @@
 #define TRAFFIC_MANAGER_HPP
 
 #include "packet.hpp"
+#include "logger.hpp"
 #include <vector>
 #include <memory> 
 #include <algorithm>
@@ -21,7 +22,7 @@ public:
     }
 
     void dropOversizedPackets(size_t maxAllowedSize) {
-        std::cout << "\n[POLICING] Dropping packets larger than " << maxAllowedSize << " bytes.\n";
+        Logger::log("[POLICING] Dropping packets larger than " + std::to_string(maxAllowedSize) + " bytes.");
 
         size_t initialSize = queue.size();
 
@@ -35,23 +36,25 @@ public:
 
         int dropped = initialSize - queue.size();
         totalDropped += dropped;
-        std::cout << "\n[POLICING] Dropped " << dropped << " oversized packets.\n";
+        Logger::log("[POLICING] Dropped " + std::to_string(dropped) + " oversized packets.");
     }
 
     void sortPackets() {
-        std::cout << "\n[SCHEDULER] Sorting packets by priority...\n";
+        Logger::log("[SCHEDULER] Sorting packets by priority...");
 
         std::sort(queue.begin(), queue.end(), [](const std::unique_ptr<Packet>& a, const std::unique_ptr<Packet>& b) {
             return static_cast<int>(a->getPriority()) > static_cast<int>(b->getPriority());
             });
     }
 
+    size_t getQueueSize() const { return queue.size(); }
+
     void processTraffic() {
-        std::cout << "\n[SYSTEM] Starting to process traffic...\n";
+        Logger::log("[SYSTEM] Starting to process traffic...");
 
         for (auto& packet : queue) {
-            std::cout << "[SENDING] ID: " << packet->getId()
-                << " | Priority: " << packet->getPriorityString() << "\n";
+            Logger::log("[SENDING] ID: " + std::to_string(packet->getId()) +
+                        " | Priority: " + packet->getPriorityString());
         }
 
 		totalProcessed += queue.size();
@@ -64,13 +67,13 @@ public:
     }
 
     void printStatistics() const {
-        std::cout << "\n=====================================\n";
-        std::cout << "      TRAFFIC MANAGER STATISTICS     \n";
-        std::cout << "=====================================\n";
-        std::cout << " Total Packets Received : " << totalReceived << "\n";
-        std::cout << " Packets Dropped (MTU)  : " << totalDropped << "\n";
-        std::cout << " Packets Processed      : " << totalProcessed << "\n";
-        std::cout << "=====================================\n";
+        Logger::log("\n=====================================");
+        Logger::log("      TRAFFIC MANAGER STATISTICS     ");
+        Logger::log("=====================================");
+        Logger::log(" Total Packets Received : " + std::to_string(totalReceived));
+        Logger::log(" Packets Dropped (MTU)  : " + std::to_string(totalDropped));
+        Logger::log(" Packets Processed      : " + std::to_string(totalProcessed));
+        Logger::log("=====================================");
     }
 };
 
