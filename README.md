@@ -2,6 +2,20 @@
 
 Symulator oraz procesor ruchu sieciowego w warstwie 3 (L3), napisany w nowoczesnym standardzie **C++17**. Projekt został zaprojektowany z myślą o wysokiej wydajności, bezpieczeństwie pamięci oraz łatwości testowania.
 
+---
+
+> 🚧 **AKTUALNY STATUS: Aktywna migracja na platformę Android (JNI/NDK)**
+> Projekt przechodzi obecnie transformację z aplikacji konsolowej w natywne narzędzie mobilne do monitorowania sieci. Istniejący silnik C++ (Core) jest integrowany z warstwą UI w Kotlinie za pomocą *Java Native Interface (JNI)*. 
+
+### 🗺️ Roadmapa rozwoju (Mobile Integration)
+- [x] Silnik C++ L3 (Filtrowanie MTU, kolejkowanie priorytetowe L3).
+- [x] Abstrakcja sieciowa UDP oraz kompleksowe testy jednostkowe (GTest).
+- [ ] **W trakcie:** Implementacja mostu JNI (`native-lib.cpp`) do do przesyłania danych pakietów do Kotlina.
+- [ ] **W planach:** Aplikacja Android (Kotlin) z wykresem ruchu w czasie rzeczywistym i powiadomieniami dla pakietów `CRITICAL`.
+- [ ] **W planach:** Rozszerzenie o protokół Reliable UDP (RUDP) oraz natywne szyfrowanie AES.
+
+---
+
 ## 🚀 Kluczowe Funkcjonalności
 
 * **Dwa Tryby Pracy (Multi-mode CLI):**
@@ -19,11 +33,12 @@ Symulator oraz procesor ruchu sieciowego w warstwie 3 (L3), napisany w nowoczesn
 
 ## 🛠 Technologie i Narzędzia
 
-* **Język:** C++17
+* **Silnik Natywny:** C++17
+* **Aplikacja Mobilna (Wdrażane):** Kotlin, Android NDK, JNI
 * **System Budowania:** CMake (3.15+)
 * **Testowanie:** Google Test (GTest) – automatycznie pobierany przez FetchContent
 * **Sieć:** UDP Sockets (Winsock2 / POSIX)
-* **Środowisko:** Wieloplatformowe (Windows/Linux)
+* **Środowisko:** Wieloplatformowe (Windows/Linux/Android)
 
 ## 🏗 Struktura Projektu
 
