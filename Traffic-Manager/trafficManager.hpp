@@ -49,6 +49,13 @@ public:
 
     size_t getQueueSize() const { return queue.size(); }
 
+    Priority getPacketPriorityAt(size_t index) const {
+        if (index < queue.size()) {
+            return queue[index]->getPriority();
+        }
+        throw std::out_of_range("Index out of bounds");
+    }
+
     void processTraffic() {
         Logger::log("[SYSTEM] Starting to process traffic...");
 
