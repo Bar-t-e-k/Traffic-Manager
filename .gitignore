@@ -23,7 +23,6 @@
 *.dll
 *.so.*
 
-
 # Fortran module files
 *.mod
 *.smod
@@ -45,12 +44,12 @@ Build/
 build-*/
 
 # Visual Studio
-.vs/
-[Bb]in/
-[Oo]bj/
-Traffic-Manager/Debug/
-Traffic-Manager/Release/
-Traffic-Manager/x64/
+**/.vs/
+**/[Bb]in/
+**/[Oo]bj/
+**/x64/
+**/Debug/
+**/Release/
 *.user
 *.suo
 *.sln.docstates
@@ -84,4 +83,12 @@ Testing/
 .cache/
 
 # logs
-/Traffic-Manager/simulator_logs.txt
+**/simulator_logs.txt
+
+# ANDROID STUDIO, KOTLIN & GRADLE
+**/.idea/
+*.iml
+local.properties
+**/.gradle/
+**/build/
+**/.cxx/
