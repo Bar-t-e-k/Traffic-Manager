@@ -4,28 +4,62 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+data class TrafficLog(
+    val id: Int,
+    val message: String,
+    val isError: Boolean,
+    val isCritical: Boolean
+)
 
 class TrafficViewModel : ViewModel() {
     private val engine = TrafficEngine()
 
-    private val _resultState = MutableStateFlow("Waiting for packet...")
-    val resultState: StateFlow<String> = _resultState.asStateFlow()
+    private val _logs = MutableStateFlow<List<TrafficLog>>(emptyList())
+    val logs: StateFlow<List<TrafficLog>> = _logs.asStateFlow()
+
+    private val _totalProcessed = MutableStateFlow(0)
+    val totalProcessed: StateFlow<Int> = _totalProcessed.asStateFlow()
+
+    private val _criticalCount = MutableStateFlow(0)
+    val criticalCount: StateFlow<Int> = _criticalCount.asStateFlow()
+
+    private var logCounter = 0
 
     fun processPacket(rawData: String) {
-        if (rawData.isBlank()) {
-            _resultState.value = "Insert packet data to parse."
-            return
-        }
+        if (rawData.isBlank()) return
+
+        logCounter++
+        val isCriticalRequest = rawData.contains("CRITICAL")
 
         try {
-            // Wywołujemy natywną metodę z C++
             val result = engine.parsePacketNative(rawData)
-            _resultState.value = "SUCCESS (returned by C++):\n$result"
+
+            addLog(TrafficLog(logCounter, result, isError = false, isCritical = isCriticalRequest))
+
+            _totalProcessed.update { it + 1 }
+            if (isCriticalRequest) {
+                _criticalCount.update { it + 1 }
+            }
+
         } catch (e: IllegalArgumentException) {
-            // Łapiemy wyjątek rzucony przez C++ (np. InvalidPacketException dla rozmiaru 0)
-            _resultState.value = "CRITICAL ERROR (C++ Exception):\n${e.message}"
+            addLog(TrafficLog(logCounter, "BŁĄD C++: ${e.message}", isError = true, isCritical = false))
         } catch (e: Exception) {
-            _resultState.value = "UNKNOWN ERROR:\n${e.message}"
+            addLog(TrafficLog(logCounter, "BŁĄD: ${e.message}", isError = true, isCritical = false))
         }
+    }
+
+    private fun addLog(log: TrafficLog) {
+        _logs.update { currentLogs ->
+            listOf(log) + currentLogs
+        }
+    }
+
+    fun clearHistory() {
+        _logs.value = emptyList()
+        _totalProcessed.value = 0
+        _criticalCount.value = 0
+        logCounter = 0
     }
 }
