@@ -10,8 +10,8 @@ Symulator oraz procesor ruchu sieciowego w warstwie 3 (L3), napisany w nowoczesn
 ### 🗺️ Roadmapa rozwoju (Mobile Integration)
 - [x] Silnik C++ L3 (Filtrowanie MTU, kolejkowanie priorytetowe L3).
 - [x] Abstrakcja sieciowa UDP oraz kompleksowe testy jednostkowe (GTest).
-- [ ] **W trakcie:** Implementacja mostu JNI (`native-lib.cpp`) do do przesyłania danych pakietów do Kotlina.
-- [ ] **W planach:** Aplikacja Android (Kotlin) z wykresem ruchu w czasie rzeczywistym i powiadomieniami dla pakietów `CRITICAL`.
+- [x] Implementacja mostu JNI (`native-lib.cpp`) do przesyłania danych pakietów do Kotlina.
+- [ ] **W trakcie:** Aplikacja Android (Kotlin) z wykresem ruchu w czasie rzeczywistym i powiadomieniami dla pakietów `CRITICAL`.
 - [ ] **W planach:** Rozszerzenie o protokół Reliable UDP (RUDP) oraz natywne szyfrowanie AES.
 
 ---
