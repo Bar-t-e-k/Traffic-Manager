@@ -26,6 +26,7 @@ data class TrafficLog(
 class TrafficViewModel : ViewModel() {
     private val engine = TrafficEngine()
 
+    // STAN GŁÓWNY
     private val _logs = MutableStateFlow<List<TrafficLog>>(emptyList())
     val logs: StateFlow<List<TrafficLog>> = _logs.asStateFlow()
 
@@ -36,6 +37,13 @@ class TrafficViewModel : ViewModel() {
     val criticalCount: StateFlow<Int> = _criticalCount.asStateFlow()
     private var logCounter = 0
 
+    private val _filterCriticalOnly = MutableStateFlow(false)
+    val filterCriticalOnly: StateFlow<Boolean> = _filterCriticalOnly.asStateFlow()
+
+    private val _udpPort = MutableStateFlow("8080")
+    val udpPort: StateFlow<String> = _udpPort.asStateFlow()
+
+    // STAN ZAKŁADKI SIECIOWEJ
     private var udpJob: Job? = null
     private var chartTimerJob: Job? = null
 
@@ -47,6 +55,7 @@ class TrafficViewModel : ViewModel() {
 
     private val packetsThisSecond = AtomicInteger(0)
 
+    // STAN ZAKŁADKI GENERATORA
     private var localGenJob: Job? = null
 
     private val _isGenerating = MutableStateFlow(false)
@@ -54,6 +63,22 @@ class TrafficViewModel : ViewModel() {
 
     private val _generatorPacketCount = MutableStateFlow("100")
     val generatorPacketCount: StateFlow<String> = _generatorPacketCount.asStateFlow()
+
+    fun toggleFilter() {
+        _filterCriticalOnly.value = !_filterCriticalOnly.value
+    }
+
+    fun updateUdpPort(newPort: String) {
+        if (newPort.all { it.isDigit() } && newPort.length <= 5) {
+            _udpPort.value = newPort
+        }
+    }
+
+    fun updateGeneratorPacketCount(newValue: String) {
+        if (newValue.all { it.isDigit() }) {
+            _generatorPacketCount.value = newValue
+        }
+    }
 
     fun processPacket(rawData: String) {
         if (rawData.isBlank()) return
@@ -83,18 +108,15 @@ class TrafficViewModel : ViewModel() {
         logCounter = 0
     }
 
-    fun updateGeneratorPacketCount(newValue: String) {
-        if (newValue.all { it.isDigit() }) {
-            _generatorPacketCount.value = newValue
-        }
-    }
-
     fun toggleLiveTraffic() {
         if (_isListening.value) {
             _isListening.value = false
             udpJob?.cancel()
             chartTimerJob?.cancel()
         } else {
+            val portToUse = _udpPort.value.toIntOrNull()?.coerceIn(1024, 65535) ?: 8080
+            _udpPort.value = portToUse.toString()
+
             _isListening.value = true
             packetsThisSecond.set(0)
 
@@ -111,7 +133,7 @@ class TrafficViewModel : ViewModel() {
             udpJob = viewModelScope.launch(Dispatchers.IO) {
                 var socket: DatagramSocket? = null
                 try {
-                    socket = DatagramSocket(8080)
+                    socket = DatagramSocket(portToUse)
                     val buffer = ByteArray(2048)
 
                     while (isActive) {
