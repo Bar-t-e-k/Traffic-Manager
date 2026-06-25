@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.net.DatagramPacket
-import java.net.DatagramSocket
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -83,13 +81,19 @@ class TrafficViewModel : ViewModel() {
     fun processPacket(rawData: String) {
         if (rawData.isBlank()) return
         logCounter++
-        val isCriticalRequest = rawData.contains("CRITICAL")
 
         try {
             val result = engine.parsePacketNative(rawData)
-            addLog(TrafficLog(logCounter, result, isError = false, isCritical = isCriticalRequest))
-            _totalProcessed.update { it + 1 }
-            if (isCriticalRequest) _criticalCount.update { it + 1 }
+
+            val isError = result.startsWith("Error", ignoreCase = true)
+            val isCriticalRequest = rawData.contains("CRITICAL") && !isError
+
+            addLog(TrafficLog(logCounter, result, isError = isError, isCritical = isCriticalRequest))
+
+            if (!isError) {
+                _totalProcessed.update { it + 1 }
+                if (isCriticalRequest) _criticalCount.update { it + 1 }
+            }
         } catch (e: Exception) {
             addLog(TrafficLog(logCounter, "BŁĄD: ${e.message}", isError = true, isCritical = false))
         }
@@ -111,11 +115,19 @@ class TrafficViewModel : ViewModel() {
     fun toggleLiveTraffic() {
         if (_isListening.value) {
             _isListening.value = false
+            engine.stopRudpServerNative()
             udpJob?.cancel()
             chartTimerJob?.cancel()
         } else {
             val portToUse = _udpPort.value.toIntOrNull()?.coerceIn(1024, 65535) ?: 8080
             _udpPort.value = portToUse.toString()
+
+            val success = engine.startRudpServerNative(portToUse)
+            if (!success) {
+                addLog(TrafficLog(0, "BŁĄD NDK: Nie udało się uruchomić RUDP Serwera na porcie $portToUse",
+                    isError = true, isCritical = false))
+                return
+            }
 
             _isListening.value = true
             packetsThisSecond.set(0)
@@ -131,24 +143,31 @@ class TrafficViewModel : ViewModel() {
             }
 
             udpJob = viewModelScope.launch(Dispatchers.IO) {
-                var socket: DatagramSocket? = null
                 try {
-                    socket = DatagramSocket(portToUse)
-                    val buffer = ByteArray(2048)
-
                     while (isActive) {
-                        val packet = DatagramPacket(buffer, buffer.size)
-                        socket.receive(packet)
+                        val logResult = engine.receiveRudpPacketNative()
 
-                        val rawData = String(packet.data, 0, packet.length).trim()
-                        packetsThisSecond.incrementAndGet()
+                        if (logResult.contains("Server not running")) break
 
-                        processPacket(rawData)
+                        if (!logResult.contains("Error:")) {
+                            packetsThisSecond.incrementAndGet()
+                        }
+
+                        logCounter++
+                        val isCritical = logResult.contains("CRITICAL")
+                        val isError = logResult.contains("Error:") || logResult.contains("RUDP Parse Error")
+
+                        if (!isError) {
+                            if (isCritical) _criticalCount.update { it + 1 }
+                            _totalProcessed.update { it + 1 }
+                        }
+
+                        _logs.update { currentLogs ->
+                            (listOf(TrafficLog(logCounter, logResult, isError, isCritical)) + currentLogs).take(200)
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                } finally {
-                    socket?.close()
                 }
             }
         }
@@ -175,6 +194,18 @@ class TrafficViewModel : ViewModel() {
                 }
                 _isGenerating.value = false
             }
+        }
+    }
+
+    fun sendReliablePacket(payload: String) {
+        if (_isListening.value) {
+            engine.sendRudpPacketNative(payload)
+            logCounter++
+            addLog(TrafficLog(logCounter, "Wysłano (RUDP): $payload", isError = false, isCritical = false))
+        } else {
+            logCounter++
+            addLog(TrafficLog(logCounter, "BŁĄD: Najpierw uruchom nasłuch UDP w zakładce 'Sieć UDP'!",
+                isError = true, isCritical = false))
         }
     }
 }
