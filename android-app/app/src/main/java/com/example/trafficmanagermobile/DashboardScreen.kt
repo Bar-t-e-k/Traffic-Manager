@@ -10,12 +10,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,21 +61,35 @@ fun DashboardScreen(viewModel: TrafficViewModel) {
                 label = { Text("Wprowadź pakiet (ID,PRIO,SIZE,DATA)") }, modifier = Modifier.fillMaxWidth(), singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { viewModel.processPacket(inputText) }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp)); Spacer(modifier = Modifier.width(8.dp)); Text("Parsuj")
+                Button(
+                    onClick = { viewModel.processPacket(inputText) },
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Lokalnie", fontSize = 12.sp)
                 }
-                OutlinedButton(onClick = { inputText = "999,CRITICAL,0,BOMB" }, modifier = Modifier.weight(1f)) {
-                    Text("Pakiet \n(rozmiar = 0)", textAlign = androidx.compose.ui.text.style.TextAlign.Center) }
+
+                Button(
+                    onClick = { viewModel.sendReliablePacket(inputText) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text("Wyślij (UDP)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                OutlinedButton(
+                    onClick = { inputText = "999,CRITICAL,0,BOMB" },
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text("Zepsuj", textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontSize = 12.sp)
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("Historia Logów", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                Text("Tylko CRITICAL", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(checked = filterCriticalOnly, onCheckedChange = { viewModel.toggleFilter() })
-            }
-            Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 items(displayLogs) { log -> LogItemCard(log) }

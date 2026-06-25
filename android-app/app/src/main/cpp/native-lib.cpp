@@ -3,6 +3,9 @@
 #include <stdexcept>
 #include "packetParser.hpp"
 #include "packet.hpp"
+#include "rudpServer.hpp"
+
+std::unique_ptr<RudpServer> g_rudpServer = nullptr;
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_trafficmanagermobile_TrafficEngine_parsePacketNative(
@@ -41,4 +44,57 @@ Java_com_example_trafficmanagermobile_TrafficEngine_parsePacketNative(
         }
         return nullptr;
     }
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_example_trafficmanagermobile_TrafficEngine_startRudpServerNative(
+        JNIEnv* env,
+        jobject /* this */,
+        jint port) {
+
+    if (!g_rudpServer) {
+        g_rudpServer = std::make_unique<RudpServer>();
+    }
+
+    return g_rudpServer->start(port) ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_trafficmanagermobile_TrafficEngine_stopRudpServerNative(
+        JNIEnv* env,
+        jobject /* this */) {
+
+    if (g_rudpServer) {
+        g_rudpServer->stop();
+        g_rudpServer.reset();
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_trafficmanagermobile_TrafficEngine_receiveRudpPacketNative(
+        JNIEnv* env,
+        jobject /* this */) {
+
+    if (!g_rudpServer) {
+        return env->NewStringUTF("Error: RUDP Server not initialized");
+    }
+
+    std::string result = g_rudpServer->receiveAndProcess();
+
+    return env->NewStringUTF(result.c_str());
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_trafficmanagermobile_TrafficEngine_sendRudpPacketNative(
+        JNIEnv* env,
+        jobject /* this */,
+        jstring payload) {
+
+    if (!g_rudpServer) return;
+
+    const char* payloadChars = env->GetStringUTFChars(payload, nullptr);
+    std::string cppPayload(payloadChars);
+    env->ReleaseStringUTFChars(payload, payloadChars);
+
+    g_rudpServer->sendReliable(cppPayload);
 }
