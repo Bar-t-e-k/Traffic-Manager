@@ -50,8 +50,8 @@ fun MainScreen(viewModel: TrafficViewModel) {
                     onClick = { selectedTab = 0 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Timeline, contentDescription = "Sieć UDP") },
-                    label = { Text("Sieć UDP") },
+                    icon = { Icon(Icons.Default.Timeline, contentDescription = "UDP Network") },
+                    label = { Text("UDP Network") },
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 }
                 )

@@ -19,15 +19,18 @@ struct UnackedPacket {
 class RudpRetransmissionManager {
 private:
     std::map<uint32_t, UnackedPacket> unackedPackets; 
-    std::mutex managerMutex;                         
+    std::mutex managerMutex; // Prevents race conditions between the main network thread and the timeout checker thread                 
     std::thread workerThread;                         
     bool isRunning = false;
 
+    // Tuning parameters for reliable delivery
     const std::chrono::milliseconds TIMEOUT_DURATION{ 200 };
     const int MAX_RETRANSMISSIONS = 5;                     
 
     std::function<void(const RudpPacket&)> sendFunction;
 
+    // Background worker loop. Periodically scans the unacked buffer for stale packets
+    // and triggers retransmission if the ACK hasn't arrived within TIMEOUT_DURATION.
     void checkTimeoutsLoop() {
         while (isRunning) {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -43,7 +46,7 @@ private:
                     if (now - it->second.lastSentTime >= TIMEOUT_DURATION) {
 
                         if (it->second.retransmissionCount >= MAX_RETRANSMISSIONS) {
-                            std::cout << "[RUDP] Pakiet " << it->first << " utracony bezpowrotnie. Przekroczono limit prób!\n";
+                            std::cout << "[RUDP] Packet " << it->first << " lost. Attempt limit exceeded!\n";
                             it = unackedPackets.erase(it);
                         }
                         else {
@@ -60,7 +63,7 @@ private:
             }
 
             for (const auto& packet : packetsToRetransmit) {
-                std::cout << "[RUDP] Timeout! Retransmisja pakietu o sekwencji: " << packet.getSequenceNumber() << "\n";
+                std::cout << "[RUDP] Timeout! Retransmission of a packet based on sequence: " << packet.getSequenceNumber() << "\n";
                 if (sendFunction) {
                     sendFunction(packet);
                 }
@@ -104,7 +107,7 @@ public:
     void acknowledgePacket(uint32_t sequenceNumber) {
         std::lock_guard<std::mutex> lock(managerMutex);
         if (unackedPackets.erase(sequenceNumber) > 0) {
-            std::cout << "[RUDP] Odebrano ACK dla pakietu: " << sequenceNumber << ". Usunięto z bufora.\n";
+            std::cout << "[RUDP] ACK received for packet: " << sequenceNumber << ". Removed from buffer.\n";
         }
     }
 };

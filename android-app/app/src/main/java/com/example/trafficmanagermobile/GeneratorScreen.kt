@@ -24,14 +24,14 @@ fun GeneratorScreen(viewModel: TrafficViewModel) {
     val displayLogs = if (filterCriticalOnly) logs.filter { it.isCritical || it.isError } else logs
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Lokalny Generator", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("Local Generator", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Wygeneruj określoną liczbę pakietów i przetestuj wydajność silnika.", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        Text("Generate a specified number of packets and test the engine's performance.", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
             value = packetCountText, onValueChange = { viewModel.updateGeneratorPacketCount(it) },
-            label = { Text("Ilość pakietów do wygenerowania") }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !isGenerating
+            label = { Text("Number of packets to generate") }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !isGenerating
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -40,13 +40,13 @@ fun GeneratorScreen(viewModel: TrafficViewModel) {
             colors = ButtonDefaults.buttonColors(containerColor = if (isGenerating) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary)
         ) {
             Icon(Icons.Default.Bolt, contentDescription = null); Spacer(modifier = Modifier.width(8.dp))
-            Text(if (isGenerating) "ZATRZYMAJ GENEROWANIE" else "URUCHOM STRESS TEST")
+            Text(if (isGenerating) "STOP GENERATION" else "START STRESS TEST")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Podgląd (max 200 wpisów)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            Text("Tylko CRITICAL", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text("Preview (max 200 entries)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text("Critical Only", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
             Spacer(modifier = Modifier.width(8.dp))
             Switch(checked = filterCriticalOnly, onCheckedChange = { viewModel.toggleFilter() })
         }

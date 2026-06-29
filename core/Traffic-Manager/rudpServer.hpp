@@ -5,6 +5,7 @@
 #include "rudpParser.hpp"
 #include "rudpRetransmissionManager.hpp"
 #include "packetParser.hpp"
+#include "crypto.hpp"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -48,7 +49,7 @@ public:
 
         serverFd = socket(AF_INET, SOCK_DGRAM, 0);
         if (serverFd < 0) {
-            std::cerr << "[RUDP Serwer] Nie udało się utworzyć gniazda.\n";
+            std::cerr << "[RUDP Server] Failed to create socket.\n";
             return false;
         }
 
@@ -58,7 +59,7 @@ public:
         serverAddr.sin_port = htons(port);
 
         if (bind(serverFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-            std::cerr << "[RUDP Serwer] Błąd bind() na porcie " << port << "\n";
+            std::cerr << "[RUDP Server] Failed to bind socket to port " << port << ".\n";
             close(serverFd);
             serverFd = -1;
             return false;
@@ -66,7 +67,7 @@ public:
 
         isRunning = true;
         retransmitManager->start(); 
-        std::cout << "[RUDP Serwer] Uruchomiony pomyślnie na porcie " << port << "...\n";
+        std::cout << "[RUDP Server] Successfully started on port " << port << "...\n";
         return true;
     }
 
@@ -78,7 +79,7 @@ public:
             close(serverFd);
             serverFd = -1;
         }
-        std::cout << "[RUDP Serwer] Zatrzymany.\n";
+        std::cout << "[RUDP Server] Stopped.\n";
     }
 
     std::string receiveAndProcess() {
@@ -99,14 +100,20 @@ public:
             RudpPacket rudpPacket = RudpParser::parse(rawData);
 
             if (rudpPacket.getType() == RudpType::ACK) {
+                // Halt retransmission for this specific packet
                 retransmitManager->acknowledgePacket(rudpPacket.getSequenceNumber());
                 return "RUDP [ACK] Received for sequence: " + std::to_string(rudpPacket.getSequenceNumber());
             }
             else {
+                // 1. Acknowledge the receipt immediately to stop sender's retransmissions
                 RudpPacket ackResponse(RudpType::ACK, rudpPacket.getSequenceNumber());
                 sendRaw(ackResponse.serialize(), clientAddr);
 
-                auto businessPacket = PacketParser::parse(rudpPacket.getInternalPayload());
+                // 2. Cryptographic layer: Peel off the AES encryption
+                std::string decryptedPayload = decryptPayload(rudpPacket.getInternalPayload());
+
+                // 3. Business layer: Parse the clear-text payload into a structured packet
+                auto businessPacket = PacketParser::parse(decryptedPayload);
 
                 if (!businessPacket) {
                     return "RUDP [DATA] Seq: " + std::to_string(rudpPacket.getSequenceNumber()) +
@@ -134,7 +141,7 @@ public:
 
         sendRaw(packet.serialize(), clientAddr);
 
-        std::cout << "[RUDP Serwer] Wysłano niezawodny pakiet. Seq: " << nextSequenceNumber << "\n";
+        std::cout << "[RUDP Server] Sent reliable packet. Seq: " << nextSequenceNumber << "\n";
         nextSequenceNumber++;
     }
 };
