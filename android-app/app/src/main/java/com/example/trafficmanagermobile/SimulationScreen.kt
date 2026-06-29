@@ -16,9 +16,9 @@ fun SimulationScreen(viewModel: TrafficViewModel) {
     val port by viewModel.udpPort.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Analiza Sieci UDP", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("UDP Network Analysis", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Pakiety UDP na sekundę (PPS)", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        Text("UDP Packets per Second (PPS)", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         Spacer(modifier = Modifier.height(24.dp))
 
         Card(modifier = Modifier.fillMaxWidth().height(250.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
@@ -29,7 +29,7 @@ fun SimulationScreen(viewModel: TrafficViewModel) {
         OutlinedTextField(
             value = port,
             onValueChange = { viewModel.updateUdpPort(it) },
-            label = { Text("Port (domyślnie 8080)") },
+            label = { Text("Port (default 8080)") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             enabled = !isListening
@@ -41,7 +41,7 @@ fun SimulationScreen(viewModel: TrafficViewModel) {
             modifier = Modifier.fillMaxWidth().height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = if (isListening) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
         ) {
-            Text(if (isListening) "ZATRZYMAJ NASŁUCHIWANIE" else "NASŁUCHUJ RUCH", fontWeight = FontWeight.Bold)
+            Text(if (isListening) "STOP LISTENING" else "START LISTENING", fontWeight = FontWeight.Bold)
         }
     }
 }

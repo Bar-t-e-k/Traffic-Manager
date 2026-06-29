@@ -21,6 +21,8 @@ public:
         totalReceived++;
     }
 
+    // Traffic Policing: Simulates MTU limits.
+    // Drops any packet that exceeds the maximum allowed size to prevent network congestion.
     void dropOversizedPackets(size_t maxAllowedSize) {
         Logger::log("[POLICING] Dropping packets larger than " + std::to_string(maxAllowedSize) + " bytes.");
 
@@ -39,6 +41,8 @@ public:
         Logger::log("[POLICING] Dropped " + std::to_string(dropped) + " oversized packets.");
     }
 
+    // Traffic Scheduling: Reorders the queue to prioritize critical payload
+    // over best-effort traffic.
     void sortPackets() {
         Logger::log("[SCHEDULER] Sorting packets by priority...");
 
@@ -47,9 +51,9 @@ public:
             });
     }
 
-    size_t getQueueSize() const { return queue.size(); }
+    [[nodiscard]] size_t getQueueSize() const { return queue.size(); }
 
-    Priority getPacketPriorityAt(size_t index) const {
+    [[nodiscard]] Priority getPacketPriorityAt(size_t index) const {
         if (index < queue.size()) {
             return queue[index]->getPriority();
         }

@@ -95,7 +95,7 @@ class TrafficViewModel : ViewModel() {
                 if (isCriticalRequest) _criticalCount.update { it + 1 }
             }
         } catch (e: Exception) {
-            addLog(TrafficLog(logCounter, "BŁĄD: ${e.message}", isError = true, isCritical = false))
+            addLog(TrafficLog(logCounter, "ERROR: ${e.message}", isError = true, isCritical = false))
         }
     }
 
@@ -124,7 +124,7 @@ class TrafficViewModel : ViewModel() {
 
             val success = engine.startRudpServerNative(portToUse)
             if (!success) {
-                addLog(TrafficLog(0, "BŁĄD NDK: Nie udało się uruchomić RUDP Serwera na porcie $portToUse",
+                addLog(TrafficLog(0, "NDK Error: Failed to run RUDP Server on the port $portToUse",
                     isError = true, isCritical = false))
                 return
             }
@@ -201,10 +201,10 @@ class TrafficViewModel : ViewModel() {
         if (_isListening.value) {
             engine.sendRudpPacketNative(payload)
             logCounter++
-            addLog(TrafficLog(logCounter, "Wysłano (RUDP): $payload", isError = false, isCritical = false))
+            addLog(TrafficLog(logCounter, "Sent (RUDP): $payload", isError = false, isCritical = false))
         } else {
             logCounter++
-            addLog(TrafficLog(logCounter, "BŁĄD: Najpierw uruchom nasłuch UDP w zakładce 'Sieć UDP'!",
+            addLog(TrafficLog(logCounter, "ERROR: Please start UDP listening in the 'UDP Network' tab!",
                 isError = true, isCritical = false))
         }
     }

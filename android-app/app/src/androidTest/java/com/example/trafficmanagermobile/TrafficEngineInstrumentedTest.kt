@@ -24,8 +24,8 @@ class TrafficEngineInstrumentedTest {
         val result = engine.parsePacketNative("105,CRITICAL,1024,SecurePayload")
 
         assertNotNull(result)
-        assertTrue("Wynik powinien zawierać priorytet", result.contains("CRITICAL"))
-        assertTrue("Wynik powinien zawierać rozmiar", result.contains("1024"))
+        assertTrue("Outcome should contain priority", result.contains("CRITICAL"))
+        assertTrue("Outcome should contain size", result.contains("1024"))
     }
 
     @Test
@@ -36,7 +36,7 @@ class TrafficEngineInstrumentedTest {
 
         assertNotNull(result)
         assertTrue(
-            "Wynik powinien zawierać informację o błędzie",
+            "Outcome should contain error information",
             result.contains("Error: It is not possible to decode the packet")
         )
     }

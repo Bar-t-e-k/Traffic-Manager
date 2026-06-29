@@ -40,25 +40,25 @@ fun DashboardScreen(viewModel: TrafficViewModel) {
                         val logText = logs.joinToString("\n") { "[#${it.id}] ${it.message}" }
                         val sendIntent = Intent().apply {
                             action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, "Logi NDK:\n\n$logText")
+                            putExtra(Intent.EXTRA_TEXT, "Logs NDK:\n\n$logText")
                             type = "text/plain"
                         }
-                        context.startActivity(Intent.createChooser(sendIntent, "Eksportuj raport"))
-                    }) { Icon(Icons.Default.Share, contentDescription = "Udostępnij") }
-                    IconButton(onClick = { viewModel.clearHistory() }) { Icon(Icons.Default.Delete, contentDescription = "Wyczyść") }
+                        context.startActivity(Intent.createChooser(sendIntent, "Export report"))
+                    }) { Icon(Icons.Default.Share, contentDescription = "Share") }
+                    IconButton(onClick = { viewModel.clearHistory() }) { Icon(Icons.Default.Delete, contentDescription = "Clear") }
                 }
             )
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).padding(16.dp).fillMaxSize()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                StatCard("Przetworzone", totalProcessed.toString(), Modifier.weight(1f), Color(0xFF4CAF50))
-                StatCard("Krytyczne", criticalCount.toString(), Modifier.weight(1f), Color(0xFFF44336))
+                StatCard("Processed", totalProcessed.toString(), Modifier.weight(1f), Color(0xFF4CAF50))
+                StatCard("Critical", criticalCount.toString(), Modifier.weight(1f), Color(0xFFF44336))
             }
             Spacer(modifier = Modifier.height(24.dp))
             OutlinedTextField(
                 value = inputText, onValueChange = { inputText = it },
-                label = { Text("Wprowadź pakiet (ID,PRIO,SIZE,DATA)") }, modifier = Modifier.fillMaxWidth(), singleLine = true
+                label = { Text("Enter packet (ID,PRIO,SIZE,DATA)") }, modifier = Modifier.fillMaxWidth(), singleLine = true
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -70,7 +70,7 @@ fun DashboardScreen(viewModel: TrafficViewModel) {
                 ) {
                     Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Lokalnie", fontSize = 12.sp)
+                    Text("Locally", fontSize = 12.sp)
                 }
 
                 Button(
@@ -79,7 +79,7 @@ fun DashboardScreen(viewModel: TrafficViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("Wyślij (UDP)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Send (UDP)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
@@ -87,7 +87,7 @@ fun DashboardScreen(viewModel: TrafficViewModel) {
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("Zepsuj", textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontSize = 12.sp)
+                    Text("Bomb", textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontSize = 12.sp)
                 }
             }
 
